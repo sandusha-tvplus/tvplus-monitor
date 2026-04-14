@@ -5,9 +5,15 @@
 import os
 
 # ─── API ключи (задайте через переменные среды или впишите напрямую) ──────────
-ANTHROPIC_API_KEY  = os.environ.get("ANTHROPIC_API_KEY", "")
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
-TELEGRAM_CHAT_ID   = os.environ.get("TELEGRAM_CHAT_ID", "")
+ANTHROPIC_API_KEY  = os.environ.get("ANTHROPIC_API_KEY",  "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")
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "7843475309:AAH_sU7iMVB_3RWuCI2phFK2yeQpZGeZWZg")
+
+# Список получателей дайджеста (можно добавлять сколько угодно)
+TELEGRAM_CHAT_IDS = [
+    "376325725",   # Sandugash (@Doogash)
+    "7051308076",  # @a_ru_ana
+    "1063629300",  # @b_alright
+]
 
 # ─── Папки ───────────────────────────────────────────────────────────────────
 STATE_DIR   = "state"    # JSON-файлы состояния (кэш виденных элементов)

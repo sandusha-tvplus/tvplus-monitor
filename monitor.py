@@ -168,28 +168,21 @@ def run(
     print("\n" + text)
 
     # 8. Отправка в Telegram (если настроен)
-    if config.TELEGRAM_BOT_TOKEN and config.TELEGRAM_CHAT_ID:
-        logger.info("Отправка уведомления в Telegram...")
-        try:
-            import asyncio
-            import httpx
-
-            async def send_tg():
-                url = f"https://api.telegram.org/bot{config.TELEGRAM_BOT_TOKEN}/sendMessage"
-                # Telegram ограничивает 4096 символов — отправляем первые
-                msg = text[:4000] + ("\n..." if len(text) > 4000 else "")
-                async with httpx.AsyncClient() as client:
-                    resp = await client.post(url, json={
-                        "chat_id": config.TELEGRAM_CHAT_ID,
-                        "text": msg,
-                        "parse_mode": "HTML",
-                    })
-                    return resp.status_code
-
-            status = asyncio.run(send_tg())
-            logger.info(f"Telegram: статус {status}")
-        except Exception as e:
-            logger.warning(f"Telegram отправка не удалась: {e}")
+    if config.TELEGRAM_BOT_TOKEN and config.TELEGRAM_CHAT_IDS:
+        logger.info(f"Отправка в Telegram ({len(config.TELEGRAM_CHAT_IDS)} получателей)...")
+        import json as _json
+        import urllib.request as _urllib
+        tg_url = f"https://api.telegram.org/bot{config.TELEGRAM_BOT_TOKEN}/sendMessage"
+        msg = text[:4000] + ("\n..." if len(text) > 4000 else "")
+        for chat_id in config.TELEGRAM_CHAT_IDS:
+            try:
+                data = _json.dumps({"chat_id": chat_id, "text": msg}).encode()
+                req = _urllib.Request(tg_url, data=data,
+                                      headers={"Content-Type": "application/json"})
+                with _urllib.urlopen(req, timeout=15) as resp:
+                    logger.info(f"  → {chat_id}: {resp.status}")
+            except Exception as e:
+                logger.warning(f"  → {chat_id}: ошибка — {e}")
 
     return 0
 
