@@ -23,7 +23,7 @@ CATEGORY_NAMES = {
     "OTHER":   "ПРОЧЕЕ",
 }
 CATEGORY_ORDER = ["ТАРИФ", "АКЦИЯ", "КОНТЕНТ", "НОВОСТЬ", "OTHER"]
-SOURCE_ICONS = {"website": "🌐", "telegram": "✈", "vk": "👥"}
+SOURCE_ICONS = {"website": "🌐", "telegram": "✈", "vk": "👥", "youtube": "▶️"}
 MONTHS_RU = ["января","февраля","марта","апреля","мая","июня",
              "июля","августа","сентября","октября","ноября","декабря"]
 

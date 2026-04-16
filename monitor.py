@@ -32,6 +32,7 @@ import config_monitor as config
 from competitor_scrapers.playwright_scraper import PlaywrightScraper
 from competitor_scrapers.telegram_web import TelegramWebScraper
 from competitor_scrapers.vk_web import VKWebScraper
+from competitor_scrapers.youtube_rss import YouTubeRssScraper
 from change_detector import ChangeDetector
 from ai_categorizer import AICategorizer
 from digest_builder import DigestBuilder
@@ -63,6 +64,7 @@ def run(
     # Инициализация
     tg_scraper  = TelegramWebScraper(timeout=config.REQUEST_TIMEOUT_SEC)
     vk_scraper  = VKWebScraper(timeout=config.REQUEST_TIMEOUT_SEC)
+    yt_scraper  = YouTubeRssScraper(timeout=config.REQUEST_TIMEOUT_SEC)
     detector    = ChangeDetector(state_dir=config.STATE_DIR)
     categorizer = AICategorizer(api_key=config.ANTHROPIC_API_KEY)
     builder     = DigestBuilder()
@@ -115,6 +117,18 @@ def run(
                     logger.info(f"   👥 VK: {group}")
                     try:
                         items = vk_scraper.scrape_group(key, name, group)
+                        logger.info(f"      Найдено: {len(items)}")
+                        all_items.extend(items)
+                    except Exception as e:
+                        logger.warning(f"      Ошибка: {e}")
+                    time.sleep(config.REQUEST_DELAY_SEC)
+
+            # 4. YouTube RSS
+            if not only_source or only_source == "youtube":
+                for channel_id in comp.get("youtube_channels", []):
+                    logger.info(f"   ▶  YouTube: {channel_id}")
+                    try:
+                        items = yt_scraper.scrape_channel(key, name, channel_id)
                         logger.info(f"      Найдено: {len(items)}")
                         all_items.extend(items)
                     except Exception as e:
@@ -202,7 +216,7 @@ if __name__ == "__main__":
         help="Не использовать Claude API (все элементы попадут в OTHER)"
     )
     parser.add_argument(
-        "--only", choices=["website", "telegram", "vk"], default="",
+        "--only", choices=["website", "telegram", "vk", "youtube"], default="",
         help="Мониторить только выбранный тип источника"
     )
     parser.add_argument(

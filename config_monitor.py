@@ -32,11 +32,12 @@ COMPETITORS = {
     "megogo": {
         "name": "Megogo KZ",
         "website_urls": [
-            "https://megogo.net/kz/",           # главная — блок тарифов
+            "https://megogo.net/kz/",
             "https://megogo.net/kz/subscriptions.html",
         ],
-        "telegram_channels": ["megogonet"],     # официальный канал Megogo
+        "telegram_channels": ["megogonet"],
         "vk_groups": ["megogo"],
+        "youtube_channels": [],
     },
     "ivi": {
         "name": "Ivi",
@@ -46,6 +47,7 @@ COMPETITORS = {
         ],
         "telegram_channels": ["ivi_official"],
         "vk_groups": ["ivi"],
+        "youtube_channels": [],
     },
     "kinopoisk": {
         "name": "Кинопоиск HD",
@@ -54,15 +56,17 @@ COMPETITORS = {
         ],
         "telegram_channels": ["kinopoisk"],
         "vk_groups": ["kinopoisk"],
+        "youtube_channels": [],
     },
     "almaplus": {
         "name": "Alma Plus",
         "website_urls": [
-            "https://almaplus.kz/",             # главная
+            "https://almaplus.kz/",
             "https://almaplus.kz/ru/",
         ],
         "telegram_channels": ["almaplus_kz"],
         "vk_groups": [],
+        "youtube_channels": [],
     },
     "unicoplay": {
         "name": "Unicoplay",
@@ -71,6 +75,7 @@ COMPETITORS = {
         ],
         "telegram_channels": ["unicoplay_kz"],
         "vk_groups": [],
+        "youtube_channels": [],
     },
     "beeline_tv": {
         "name": "Beeline TV KZ",
@@ -79,6 +84,7 @@ COMPETITORS = {
         ],
         "telegram_channels": ["beeline_kz"],
         "vk_groups": ["beelinekazakhstan"],
+        "youtube_channels": [],
     },
     "freedom": {
         "name": "Freedom Media",
@@ -87,6 +93,7 @@ COMPETITORS = {
         ],
         "telegram_channels": ["freedommediakz"],
         "vk_groups": [],
+        "youtube_channels": [],
     },
     "start": {
         "name": "Start.ru",
@@ -95,6 +102,7 @@ COMPETITORS = {
         ],
         "telegram_channels": ["startru"],
         "vk_groups": ["startru"],
+        "youtube_channels": [],
     },
     "wink": {
         "name": "Wink (Ростелеком)",
@@ -104,6 +112,7 @@ COMPETITORS = {
         ],
         "telegram_channels": ["wink_ru"],
         "vk_groups": ["winkru"],
+        "youtube_channels": [],
     },
     "qube": {
         "name": "Qube (Казахстан)",
@@ -113,6 +122,8 @@ COMPETITORS = {
         ],
         "telegram_channels": ["qube_kz"],
         "vk_groups": [],
+        # YouTube: официальный канал Qube KZ
+        "youtube_channels": ["UClmwE5HsBUxYwRSfRQgNr3Q"],
     },
     "amediateka": {
         "name": "Амедиатека",
@@ -122,5 +133,6 @@ COMPETITORS = {
         ],
         "telegram_channels": ["amediateka"],
         "vk_groups": ["amediateka"],
+        "youtube_channels": [],
     },
 }
