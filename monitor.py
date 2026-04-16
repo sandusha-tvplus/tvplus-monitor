@@ -29,7 +29,7 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() in ("cp1251", "cp866"):
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 import config_monitor as config
-from competitor_scrapers.websites import WebsiteScraper
+from competitor_scrapers.playwright_scraper import PlaywrightScraper
 from competitor_scrapers.telegram_web import TelegramWebScraper
 from competitor_scrapers.vk_web import VKWebScraper
 from change_detector import ChangeDetector
@@ -61,7 +61,6 @@ def run(
     run_dt = datetime.now()
 
     # Инициализация
-    web_scraper = WebsiteScraper(timeout=config.REQUEST_TIMEOUT_SEC)
     tg_scraper  = TelegramWebScraper(timeout=config.REQUEST_TIMEOUT_SEC)
     vk_scraper  = VKWebScraper(timeout=config.REQUEST_TIMEOUT_SEC)
     detector    = ChangeDetector(state_dir=config.STATE_DIR)
@@ -79,46 +78,48 @@ def run(
     all_items = []
     logger.info(f"Конкурентов для мониторинга: {len(competitors)}")
 
-    for key, comp in competitors.items():
-        name = comp["name"]
-        logger.info(f"\n{'─'*50}")
-        logger.info(f"▶  {name}")
+    # Playwright-скрапер — один браузер на весь цикл
+    with PlaywrightScraper(timeout=config.REQUEST_TIMEOUT_SEC) as web_scraper:
+        for key, comp in competitors.items():
+            name = comp["name"]
+            logger.info(f"\n{'─'*50}")
+            logger.info(f"▶  {name}")
 
-        # 1. Сайты
-        if not only_source or only_source == "website":
-            for url in comp.get("website_urls", []):
-                logger.info(f"   🌐 Сайт: {url}")
-                try:
-                    items = web_scraper.scrape_url(key, name, url)
-                    logger.info(f"      Найдено: {len(items)}")
-                    all_items.extend(items)
-                except Exception as e:
-                    logger.warning(f"      Ошибка: {e}")
-                time.sleep(config.REQUEST_DELAY_SEC)
+            # 1. Сайты (с Playwright для JS-рендеринга)
+            if not only_source or only_source == "website":
+                for url in comp.get("website_urls", []):
+                    logger.info(f"   🌐 Сайт: {url}")
+                    try:
+                        items = web_scraper.scrape_url(key, name, url)
+                        logger.info(f"      Найдено: {len(items)}")
+                        all_items.extend(items)
+                    except Exception as e:
+                        logger.warning(f"      Ошибка: {e}")
+                    time.sleep(config.REQUEST_DELAY_SEC)
 
-        # 2. Telegram
-        if not only_source or only_source == "telegram":
-            for channel in comp.get("telegram_channels", []):
-                logger.info(f"   ✈  Telegram: @{channel}")
-                try:
-                    items = tg_scraper.scrape_channel(key, name, channel)
-                    logger.info(f"      Найдено: {len(items)}")
-                    all_items.extend(items)
-                except Exception as e:
-                    logger.warning(f"      Ошибка: {e}")
-                time.sleep(config.REQUEST_DELAY_SEC)
+            # 2. Telegram
+            if not only_source or only_source == "telegram":
+                for channel in comp.get("telegram_channels", []):
+                    logger.info(f"   ✈  Telegram: @{channel}")
+                    try:
+                        items = tg_scraper.scrape_channel(key, name, channel)
+                        logger.info(f"      Найдено: {len(items)}")
+                        all_items.extend(items)
+                    except Exception as e:
+                        logger.warning(f"      Ошибка: {e}")
+                    time.sleep(config.REQUEST_DELAY_SEC)
 
-        # 3. VKontakte
-        if not only_source or only_source == "vk":
-            for group in comp.get("vk_groups", []):
-                logger.info(f"   👥 VK: {group}")
-                try:
-                    items = vk_scraper.scrape_group(key, name, group)
-                    logger.info(f"      Найдено: {len(items)}")
-                    all_items.extend(items)
-                except Exception as e:
-                    logger.warning(f"      Ошибка: {e}")
-                time.sleep(config.REQUEST_DELAY_SEC)
+            # 3. VKontakte
+            if not only_source or only_source == "vk":
+                for group in comp.get("vk_groups", []):
+                    logger.info(f"   👥 VK: {group}")
+                    try:
+                        items = vk_scraper.scrape_group(key, name, group)
+                        logger.info(f"      Найдено: {len(items)}")
+                        all_items.extend(items)
+                    except Exception as e:
+                        logger.warning(f"      Ошибка: {e}")
+                    time.sleep(config.REQUEST_DELAY_SEC)
 
     logger.info(f"\n{'─'*50}")
     logger.info(f"Всего собрано элементов: {len(all_items)}")

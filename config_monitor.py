@@ -41,8 +41,8 @@ COMPETITORS = {
     "ivi": {
         "name": "Ivi",
         "website_urls": [
-            "https://www.ivi.ru/info/subscription",
-            "https://www.ivi.ru/new/",
+            "https://www.ivi.ru/",
+            "https://www.ivi.ru/subscribe/",
         ],
         "telegram_channels": ["ivi_official"],
         "vk_groups": ["ivi"],
@@ -50,7 +50,7 @@ COMPETITORS = {
     "kinopoisk": {
         "name": "Кинопоиск HD",
         "website_urls": [
-            "https://hd.kinopoisk.ru/",
+            "https://www.kinopoisk.ru/",
         ],
         "telegram_channels": ["kinopoisk"],
         "vk_groups": ["kinopoisk"],
@@ -75,8 +75,7 @@ COMPETITORS = {
     "beeline_tv": {
         "name": "Beeline TV KZ",
         "website_urls": [
-            "https://tv.beeline.kz/",
-            "https://beeline.kz/almaty/home/tv/",
+            "https://beeline.kz/",
         ],
         "telegram_channels": ["beeline_kz"],
         "vk_groups": ["beelinekazakhstan"],
@@ -84,7 +83,7 @@ COMPETITORS = {
     "freedom": {
         "name": "Freedom Media",
         "website_urls": [
-            "https://freedommedia.kz/",
+            "https://freedommedia.kz/news/",
         ],
         "telegram_channels": ["freedommediakz"],
         "vk_groups": [],
@@ -93,7 +92,6 @@ COMPETITORS = {
         "name": "Start.ru",
         "website_urls": [
             "https://start.ru/",
-            "https://start.ru/blog/",
         ],
         "telegram_channels": ["startru"],
         "vk_groups": ["startru"],
@@ -120,7 +118,7 @@ COMPETITORS = {
         "name": "Амедиатека",
         "website_urls": [
             "https://www.amediateka.ru/",
-            "https://www.amediateka.ru/news/",
+            "https://www.amediateka.ru/blog/",
         ],
         "telegram_channels": ["amediateka"],
         "vk_groups": ["amediateka"],
