@@ -22,7 +22,7 @@ CATEGORY_NAMES = {
     "НОВОСТЬ": "НОВОСТИ КОМПАНИЙ",
     "OTHER":   "ПРОЧЕЕ",
 }
-CATEGORY_ORDER = ["ТАРИФ", "АКЦИЯ", "КОНТЕНТ", "НОВОСТЬ", "OTHER"]
+CATEGORY_ORDER = ["ТАРИФ", "АКЦИЯ", "КОНТЕНТ", "НОВОСТЬ"]  # OTHER скрыт из дайджеста
 SOURCE_ICONS = {"website": "🌐", "telegram": "✈", "vk": "👥", "youtube": "▶️"}
 MONTHS_RU = ["января","февраля","марта","апреля","мая","июня",
              "июля","августа","сентября","октября","ноября","декабря"]
@@ -35,21 +35,26 @@ class DigestBuilder:
         lines = []
 
         # ── Шапка ──────────────────────────────────────────────
+        # Считаем только те, что попадут в дайджест (без OTHER)
+        visible = sum(1 for item in items if item.category in CATEGORY_ORDER)
         lines += [
             f"📊 ДАЙДЖЕСТ КОНКУРЕНТНОЙ РАЗВЕДКИ — ТВ+",
-            f"📅 {date_ru}  |  Новых событий: {len(items)}",
+            f"📅 {date_ru}  |  Новых событий: {visible}",
             "",
         ]
 
-        if not items:
-            lines.append("Новых событий не обнаружено.")
+        if not items or visible == 0:
+            lines.append("Новых значимых событий не обнаружено.")
             return "\n".join(lines)
 
-        # ── Группировка по категориям ───────────────────────────
+        # ── Группировка по категориям (OTHER скрывается) ────────
         by_cat: dict[str, list] = {cat: [] for cat in CATEGORY_ORDER}
+        skipped = 0
         for item in items:
-            cat = item.category if item.category in by_cat else "OTHER"
-            by_cat[cat].append(item)
+            if item.category in by_cat:
+                by_cat[item.category].append(item)
+            else:
+                skipped += 1  # OTHER и неизвестные — не показываем
 
         for cat in CATEGORY_ORDER:
             group = by_cat[cat]
@@ -91,7 +96,6 @@ class DigestBuilder:
         if counts["АКЦИЯ"]:   parts.append(f"🎁 акций: {counts['АКЦИЯ']}")
         if counts["КОНТЕНТ"]: parts.append(f"🎬 контента: {counts['КОНТЕНТ']}")
         if counts["НОВОСТЬ"]: parts.append(f"📰 новостей: {counts['НОВОСТЬ']}")
-        if counts["OTHER"]:   parts.append(f"📌 прочее: {counts['OTHER']}")
 
         lines += [
             "─" * 40,

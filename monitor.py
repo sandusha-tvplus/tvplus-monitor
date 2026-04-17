@@ -138,6 +138,21 @@ def run(
     logger.info(f"\n{'─'*50}")
     logger.info(f"Всего собрано элементов: {len(all_items)}")
 
+    # Базовая очистка мусора (системные сообщения, слишком короткие заголовки)
+    JUNK_TITLES = {
+        "channel created", "channel name was changed", "что ищут",
+        "всегда легко найти, что посмотреть",
+    }
+    before = len(all_items)
+    all_items = [
+        item for item in all_items
+        if len(item.title.strip()) >= 5
+        and item.title.strip().lower() not in JUNK_TITLES
+        and not item.title.strip().lower().startswith("channel ")
+    ]
+    if len(all_items) < before:
+        logger.info(f"После очистки мусора: {len(all_items)} (убрано {before - len(all_items)})")
+
     # 4. Фильтр изменений
     if force:
         new_items = all_items
@@ -155,17 +170,18 @@ def run(
         logger.info(f"Пустой дайджест сохранён: {path.resolve()}")
         return 0
 
-    # 5. Категоризация через Claude API
+    # 5. Категоризация — сначала keywords, затем уточняем через Claude (если доступен)
+    from ai_categorizer import keyword_categorize
+    for item in new_items:
+        item.category = keyword_categorize(item)
+
     if not no_ai and config.ANTHROPIC_API_KEY:
-        logger.info(f"\nКатегоризация {len(new_items)} элементов через Claude API...")
+        logger.info(f"\nУточнение категорий {len(new_items)} элементов через Claude API...")
         categorizer.categorize(new_items)
+    elif no_ai:
+        logger.info("--no-ai: только keyword-категоризация")
     else:
-        if no_ai:
-            logger.info("--no-ai: пропускаем категоризацию")
-        else:
-            logger.warning("ANTHROPIC_API_KEY не задан — добавьте ключ в config_monitor.py")
-        for item in new_items:
-            item.category = "OTHER"
+        logger.warning("ANTHROPIC_API_KEY недоступен — только keyword-категоризация")
 
     # 6. Статистика по категориям
     from collections import Counter

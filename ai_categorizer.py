@@ -10,6 +10,41 @@ logger = logging.getLogger(__name__)
 
 VALID_CATEGORIES = {"ТАРИФ", "КОНТЕНТ", "НОВОСТЬ", "АКЦИЯ", "OTHER"}
 
+# Ключевые слова для категоризации без Claude (запасной вариант)
+KEYWORD_RULES = {
+    "ТАРИФ": [
+        "тариф", "подписк", "цен", "стоимост", "план", "пакет", "месяц",
+        "₸", "тг", "руб", "subscribe", "subscription", "price", "plan",
+    ],
+    "АКЦИЯ": [
+        "акци", "скидк", "промокод", "бесплатн", "подарок", "розыгрыш",
+        "спецпредложени", "sale", "promo", "offer", "скидка", "free",
+    ],
+    "КОНТЕНТ": [
+        "сериал", "фильм", "шоу", "сезон", "серия", "эпизод", "трейлер",
+        "премьер", "выход", "новинк", "анонс", "кино", "микродрам",
+        "смотрит", "watch", "movie", "series", "episode", "мультфильм",
+    ],
+    "НОВОСТЬ": [
+        "партнёрств", "партнерств", "руководств", "назначен", "финанс",
+        "инвестиц", "технологи", "сервис", "платформ", "запуск", "открыт",
+        "news", "announce", "launch",
+    ],
+}
+
+
+def keyword_categorize(item) -> str:
+    """Быстрая категоризация по ключевым словам — работает без Claude API."""
+    text = (item.title + " " + item.text).lower()
+    # YouTube всегда КОНТЕНТ
+    if item.source_type == "youtube":
+        return "КОНТЕНТ"
+    for cat, keywords in KEYWORD_RULES.items():
+        if any(kw in text for kw in keywords):
+            return cat
+    return "OTHER"
+
+
 SYSTEM_PROMPT = """Ты — аналитик конкурентной разведки для казахстанского стримингового сервиса ТВ+.
 Тебе дают список находок, собранных с сайтов, Telegram-каналов и VK-групп конкурентов.
 Для каждой находки определи категорию:
@@ -42,9 +77,9 @@ class AICategorizer:
         if not items:
             return items
         if not self.api_key:
-            logger.warning("ANTHROPIC_API_KEY не задан — категории не определяются (OTHER)")
+            logger.info("ANTHROPIC_API_KEY не задан — использую keyword-категоризацию")
             for item in items:
-                item.category = "OTHER"
+                item.category = keyword_categorize(item)
             return items
 
         BATCH_SIZE = 20
@@ -90,9 +125,9 @@ class AICategorizer:
                 raw = raw.rsplit("```", 1)[0]
             results = json.loads(raw)
         except Exception as e:
-            logger.warning(f"Claude API ошибка: {e} — ставлю OTHER для батча")
+            logger.warning(f"Claude API ошибка: {e} — использую keyword-категоризацию")
             for item in batch:
-                item.category = "OTHER"
+                item.category = keyword_categorize(item)
             return
 
         id_to_result = {r["id"]: r for r in results if isinstance(r, dict)}

@@ -5,8 +5,8 @@
 import os
 
 # ─── API ключи (задайте через переменные среды или впишите напрямую) ──────────
-ANTHROPIC_API_KEY  = os.environ.get("ANTHROPIC_API_KEY",  "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")
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "7843475309:AAH_sU7iMVB_3RWuCI2phFK2yeQpZGeZWZg")
+ANTHROPIC_API_KEY  = os.environ.get("ANTHROPIC_API_KEY")  or "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"
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN") or "7843475309:AAH_sU7iMVB_3RWuCI2phFK2yeQpZGeZWZg"
 
 # Список получателей дайджеста (можно добавлять сколько угодно)
 TELEGRAM_CHAT_IDS = [
