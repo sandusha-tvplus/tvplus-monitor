@@ -113,7 +113,7 @@ class AICategorizer:
             client = self._get_client()
             response = client.messages.create(
                 model="claude-haiku-4-5",
-                max_tokens=1024,
+                max_tokens=2048,
                 system=SYSTEM_PROMPT,
                 messages=[{"role": "user", "content": user_msg}],
             )

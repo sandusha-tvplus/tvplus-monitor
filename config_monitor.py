@@ -3,10 +3,22 @@
 Заполните ANTHROPIC_API_KEY и (опционально) Telegram-токен.
 """
 import os
+from pathlib import Path
 
-# ─── API ключи (задайте через переменные среды или впишите напрямую) ──────────
-ANTHROPIC_API_KEY  = os.environ.get("ANTHROPIC_API_KEY")  or "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"
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN") or "7843475309:AAH_sU7iMVB_3RWuCI2phFK2yeQpZGeZWZg"
+# Загружаем .env для локального запуска (файл не попадает в git)
+_env_path = Path(__file__).parent / ".env"
+if _env_path.exists():
+    for _line in _env_path.read_text(encoding="utf-8").splitlines():
+        _line = _line.strip()
+        if _line and not _line.startswith("#") and "=" in _line:
+            _k, _v = _line.split("=", 1)
+            # Перезаписываем только если переменная пустая или не задана
+            if not os.environ.get(_k.strip()):
+                os.environ[_k.strip()] = _v.strip()
+
+# ─── API ключи — берутся из .env или GitHub Secrets ──────────────────────────
+ANTHROPIC_API_KEY  = os.environ.get("ANTHROPIC_API_KEY", "")
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 
 # Список получателей дайджеста (можно добавлять сколько угодно)
 TELEGRAM_CHAT_IDS = [
