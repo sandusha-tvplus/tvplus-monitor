@@ -19,6 +19,13 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Restore seen-items cache (state/)
+        uses: actions/cache@v4
+        with:
+          path: state/
+          key: monitor-state-${{ runner.os }}
+          restore-keys: monitor-state-
+
       - name: Install dependencies
         run: pip install -r requirements.txt
 
