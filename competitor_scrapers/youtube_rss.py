@@ -4,6 +4,7 @@ YouTube бесплатно отдаёт Atom-фид для любого публ
 URL фида: https://www.youtube.com/feeds/videos.xml?channel_id=CHANNEL_ID
 """
 import logging
+import re
 import urllib.request
 from datetime import datetime
 from xml.etree import ElementTree as ET
@@ -18,6 +19,32 @@ NS = {
     "yt":    "http://www.youtube.com/xml/schemas/2015",
     "media": "http://search.yahoo.com/mrss/",
 }
+
+_HASHTAG_RE = re.compile(r"\s*#\S+")
+_EMOJI_RE   = re.compile(
+    r"[\U0001F300-\U0001FAFF\U00002600-\U000027BF\U0001F000-\U0001F02F"
+    r"\U0001F0A0-\U0001F0FF\U0001F100-\U0001F1FF\U0001F200-\U0001F2FF"
+    r"\U00002702-\U000027B0\U000024C2-\U0001F251\U0000200D]+"
+)
+_QUOTED_RE  = re.compile(r'[«"\u201c](.+?)[»"\u201d]')  # текст в кавычках
+
+
+def _core_title(title: str) -> str:
+    """
+    Ключ для дедупликации:
+    1. Если есть название в кавычках «…» — берём только его.
+    2. Иначе — первые 5 слов без хэштегов и эмодзи.
+    """
+    # Приоритет: название в кавычках (это обычно имя сериала/фильма)
+    m = _QUOTED_RE.search(title)
+    if m:
+        return m.group(1).strip().lower()
+
+    # Запасной вариант: первые 5 слов после очистки
+    t = _HASHTAG_RE.sub("", title)
+    t = _EMOJI_RE.sub("", t)
+    words = t.split()
+    return " ".join(words[:5]).lower()
 
 
 class YouTubeRssScraper:
@@ -47,15 +74,25 @@ class YouTubeRssScraper:
             return []
 
         items = []
+        seen_titles: set[str] = set()   # дедупликация по нормализованному заголовку
         entries = root.findall("atom:entry", NS)
 
-        for entry in entries[:20]:  # берём последние 20 видео
+        for entry in entries[:20]:
             title_el = entry.find("atom:title", NS)
             link_el  = entry.find("atom:link[@rel='alternate']", NS)
             pub_el   = entry.find("atom:published", NS)
             desc_el  = entry.find("media:group/media:description", NS)
 
             title = title_el.text.strip() if title_el is not None and title_el.text else ""
+            if not title:
+                continue
+
+            # Пропускаем если уже видели похожий заголовок в этой партии
+            core = _core_title(title)
+            if core in seen_titles:
+                continue
+            seen_titles.add(core)
+
             video_url = link_el.get("href", "") if link_el is not None else ""
             date_hint = ""
             if pub_el is not None and pub_el.text:
@@ -68,9 +105,6 @@ class YouTubeRssScraper:
             description = ""
             if desc_el is not None and desc_el.text:
                 description = desc_el.text.strip()[:300]
-
-            if not title:
-                continue
 
             text = description or title
 
@@ -85,5 +119,5 @@ class YouTubeRssScraper:
                 date_hint=date_hint,
             ))
 
-        logger.debug(f"YouTube @{channel_id}: найдено {len(items)} видео")
+        logger.debug(f"YouTube @{channel_id}: {len(entries)} видео → {len(items)} уникальных")
         return items
